@@ -15,28 +15,28 @@
   <body>
     <div class="container">
       <div class="row">
-        <div class="col-sm buttonContainer">
-          <button class="btn" data-category="test">test</button>
+        <div class="col-sm btn-group-toggle buttonContainer" data-toggle="buttons">
         </div>
       </div>
 
       <div class="row">
-        <div class="col-md-7 col-sm-12 gifContainer">
-          gifs go here
-          <!-- row   GIFS
-          row   GIFS
-          row GIFS -->
+        <div class="col-md-9 col-sm-12">
+            <div class="jumbotron jumbotron-fluid">
+                <div class="container gifContainer">
+                </div>
+              </div>
         </div>
 
-        <div class="col-md-5 addCategory">
-          <!-- add an animal form -->
+        <div class="col-md-3 addCategory">
+            <form>
+                <div class="form-group">
+                  <label for="exampleInputEmail1">Add a category</label>
+                  <input type="text" class="form-control" id="categoryInput">
+                </div>
+                <button type="submit" class="btn btn-secondary" id="addCategory">Submit</button>
+              </form>
         </div> 
       </div>
-
-
-
-
-
 
     </div>
 

@@ -1,0 +1,19 @@
+body, .jumbotron {
+    background-image: url("../images/foil.png");
+}
+
+.btn {
+    margin: 5px;
+}
+
+.gifContainer {
+    padding-top: 30px;
+    display: inline-block;
+    width: 60%;
+}
+
+.gifDiv {
+    display: inline-block;
+    float: left;
+    white-space: nowrap;
+}
