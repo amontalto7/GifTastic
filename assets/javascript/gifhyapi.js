@@ -1,3 +1,5 @@
+var topics = [];
+
 function buildQueryURL(gifCategory) {
   //https://api.giphy.com/v1/gifs/search?api_key=5luyhCx489UHXt7GXRw4Z3kAw9RZbPTO&q=cats
   const API_KEY = "5luyhCx489UHXt7GXRw4Z3kAw9RZbPTO";
@@ -27,8 +29,6 @@ $(document).ready(function() {
     var queryURL = buildQueryURL(searchTerm);
     //   "https://api.giphy.com/v1/gifs/search?api_key=5luyhCx489UHXt7GXRw4Z3kAw9RZbPTO&q=cats";
 
-
-
     $.ajax({
       url: queryURL,
       method: "GET"
@@ -44,10 +44,16 @@ $(document).ready(function() {
           var gifRating = $("<p>");
           gifRating.text("Rating: " + response.data[i].rating);
 
+          // build image tag
           var gifImage = $("<img>");
-          var gifUrl = response.data[i].images.fixed_height.url;
-          console.log(gifUrl);
-          gifImage.attr("src", gifUrl);
+          var gifStill =  response.data[i].images.fixed_height_still.url;
+          var gifAnimated = response.data[i].images.fixed_height.url;
+          gifImage.addClass("gif");
+          gifImage.attr("src", gifStill);
+          gifImage.attr("data-still", gifStill);
+          gifImage.attr("data-animate", gifAnimated);
+          gifImage.attr("data-state","still");
+          
 
             gifDiv.append(gifImage);
             gifDiv.append(gifRating);      
@@ -56,4 +62,15 @@ $(document).ready(function() {
         }
       });
   });
+
+  $(document).on("click",".gif",function() {
+    var state = $(this).attr("data-state");
+    if (state === "still") {
+        $(this).attr("src", $(this).attr("data-animate"));
+        $(this).attr("data-state", "animate");
+      } else {
+        $(this).attr("src", $(this).attr("data-still"));
+        $(this).attr("data-state", "still");
+      };
+  });      
 });
