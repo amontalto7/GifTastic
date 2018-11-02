@@ -6,14 +6,10 @@ body, .jumbotron {
     margin: 5px;
 }
 
-.gifContainer {
-    padding-top: 30px;
-    display: inline-block;
-    width: 60%;
+.gifContainer, .addCategory {
+    margin-top: 30px;
 }
 
-.gifDiv {
-    display: inline-block;
-    float: left;
-    white-space: nowrap;
+div {
+    /* border: 1px solid red; */
 }
