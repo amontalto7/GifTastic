@@ -14,6 +14,7 @@ var topics = [
 ];
 
 var gifLimit = 10;
+var searchTerm = "";
 
 function buildQueryURL(gifCategory, limit) {
   //https://api.giphy.com/v1/gifs/search?api_key=5luyhCx489UHXt7GXRw4Z3kAw9RZbPTO&q=cats
@@ -54,82 +55,84 @@ function generateButtons() {
   }
 }
 
+// Function to empty out the content
+function clear() {
+  $(".gifContainer").empty();
+  $(".addmore").empty();
+}
+
+/**
+ * takes API data (JSON/object) and turns it into elements on the page
+ * @param {object} GiphyData - object containing giphy api data
+ */
+function updatePage(GiphyData) {
+//   console.log(GiphyData);
+
+  for (var i = gifLimit-10; i < GiphyData.data.length; i++) {
+    // create div
+    var gifDiv = $("<div>");
+    var gifRating = $("<p>");
+    var gifTitle = $("<p>");
+
+    var dataRating = GiphyData.data[i].rating;
+    if (dataRating) {
+      gifRating.text("Rating: " + dataRating);
+    }
+
+    var dataTitle = GiphyData.data[i].title;
+    if (dataTitle) {
+      gifTitle.text("Title: " + dataTitle);
+    }
+    gifRating.addClass("small");
+    gifTitle.addClass("small mb-0");
+
+    // build image tag
+    var gifImage = $("<img>");
+    var gifStill = GiphyData.data[i].images.fixed_height_still.url;
+    var gifAnimated = GiphyData.data[i].images.fixed_height.url;
+
+    if (gifStill) {
+      gifImage.addClass("gif");
+      gifImage.attr("src", gifStill);
+      gifImage.attr("data-still", gifStill);
+      gifImage.attr("data-animate", gifAnimated);
+      gifImage.attr("data-state", "still");
+      gifDiv.addClass("float-left mr-3"); // bootstrap float
+      gifDiv.append(gifImage);
+      gifDiv.append(gifTitle);
+      gifDiv.append(gifRating);
+
+      $(".gifContainer").append(gifDiv);
+    }
+  }
+
+  var addDiv = $("<div>");
+  addDiv.addClass("float-right");
+  var addMore = $("<button>");
+  addMore.addClass("btn btn-large btn-secondary btnAdd");
+  addMore.text(" + ");
+  addMore.attr("data-category", searchTerm);
+  addDiv.append(addMore);
+  $(".addmore").append(addMore);
+}
+
 $(document).ready(function() {
   //javascript, jQuery
   generateButtons();
 
   $(document).on("click", ".topic", function() {
-    var searchTerm = $(this).attr("data-category");
+    searchTerm = $(this).attr("data-category");
     gifLimit = 10;
     $(this).addClass("active");
-    console.log(searchTerm);
-    var queryURL = buildQueryURL(searchTerm,gifLimit);
+    // console.log(searchTerm);
+    clear();
+    var queryURL = buildQueryURL(searchTerm, gifLimit);
     //   "https://api.giphy.com/v1/gifs/search?api_key=5luyhCx489UHXt7GXRw4Z3kAw9RZbPTO&q=cats";
 
     $.ajax({
       url: queryURL,
       method: "GET"
-    })
-
-      //
-      .then(function(response) {
-        console.log(response);
-//TODO - make this a seperate function
-        // empty previous gifs
-        $(".gifContainer").empty();
-        $(".addmore").empty();
-
-        $(".jumbotron").addClass("bg-white shadow p-3 mb-5  rounded");
-
-        for (var i = 0; i < response.data.length; i++) {
-          // create div
-          var gifDiv = $("<div>");
-          var gifRating = $("<p>");
-          var gifTitle = $("<p>");
-
-          var dataRating = response.data[i].rating;
-          if (dataRating) {
-            gifRating.text("Rating: " + dataRating);
-          }
-
-          var dataTitle = response.data[i].title;
-          if (dataTitle) {
-            gifTitle.text("Title: " + dataTitle);
-          }
-          gifRating.addClass("small");
-          gifTitle.addClass("small mb-0");
-
-          // build image tag
-          var gifImage = $("<img>");
-          var gifStill = response.data[i].images.fixed_height_still.url;
-          var gifAnimated = response.data[i].images.fixed_height.url;
-
-          if (gifStill) {
-            gifImage.addClass("gif");
-            gifImage.attr("src", gifStill);
-            gifImage.attr("data-still", gifStill);
-            gifImage.attr("data-animate", gifAnimated);
-            gifImage.attr("data-state", "still");
-            gifDiv.addClass("float-left mr-3"); // bootstrap float
-            gifDiv.append(gifImage);
-            gifDiv.append(gifTitle);
-            gifDiv.append(gifRating);
-
-            $(".gifContainer").prepend(gifDiv);
-          }
-
-          //   gifDiv.css("max-width", response.data[i].images.fixed_height.width);
-        }
-
-        var addDiv = $("<div>");
-        addDiv.addClass("float-right");
-        var addMore = $("<button>");
-        addMore.addClass("btn btn-large btn-secondary btnAdd");
-        addMore.text(" + ");
-        addMore.attr("data-category", searchTerm)
-        addDiv.append(addMore);
-        $(".addmore").append(addMore);
-      });
+    }).then(updatePage);
   });
 
   // function to animate/pause gifs on click
@@ -144,11 +147,19 @@ $(document).ready(function() {
     }
   });
 
+  //When clicking the + button, it adds 10 to the limit and re-does the AJAX call, then re-populates everything.
+  //TODO: Figure out a way to keep original content, and simply add more to the bottom
   $(document).on("click", ".btnAdd", function() {
-      gifLimit +=10;
-      var searchTerm = $(this).attr("data-category");
+    $(".addmore").empty();
+    gifLimit += 10;
+    // var searchTerm = $(this).attr("data-category");
+    var queryURL = buildQueryURL(searchTerm, gifLimit);
 
-    });
+    $.ajax({
+      url: queryURL,
+      method: "GET"
+    }).then(updatePage);
+  });
 
   $("#addCategory").on("click", function() {
     event.preventDefault();
@@ -158,7 +169,7 @@ $(document).ready(function() {
       .val()
       .trim();
     if (newCategory) {
-      console.log(newCategory);
+    //   console.log(newCategory);
       $("#categoryInput").val("");
       topics.push(newCategory);
       generateButtons();
