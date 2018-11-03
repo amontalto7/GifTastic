@@ -107,7 +107,7 @@ function updatePage(GiphyData) {
     dl.addClass("dl");
 
     dl.append(dlIcon);
-    fav.addClass("fas fa-heart");
+    fav.addClass("far fa-heart");
     dlIcon.addClass("fas fa-download");
 
     if (gifStill) {
@@ -158,6 +158,9 @@ $(document).ready(function() {
 
     $.ajax({
       url: queryURL,
+      headers: {
+        'Accept' : 'image/*'
+      },
       method: "GET"
     }).then(updatePage);
   });
