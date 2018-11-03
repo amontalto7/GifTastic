@@ -1,3 +1,10 @@
+//TODO: Implement "favorites" by grabbing ID, then using "Get GIF by ID Endpoint"
+// console.log(GiphyData.data[i].id);
+//TODO: Figure out where TAGS are stores in the object
+// Direct Download:
+// https://www.w3schools.com/tags/att_a_download.asp
+// https://www.elegantthemes.com/blog/divi-resources/how-to-create-a-direct-single-click-download-button-in-divi-using-the-download-attribute
+
 var topics = [
   "fail",
   "deal with it",
@@ -10,7 +17,8 @@ var topics = [
   "oh snap",
   "agree",
   "excellent",
-  "reactions"
+  "reactions",
+  "derp"
 ];
 
 var gifLimit = 10;
@@ -66,9 +74,10 @@ function clear() {
  * @param {object} GiphyData - object containing giphy api data
  */
 function updatePage(GiphyData) {
-//   console.log(GiphyData);
+  console.log(GiphyData);
 
-  for (var i = gifLimit-10; i < GiphyData.data.length; i++) {
+  // if there is already content and you've clicked the + button, it will simply add more to the page instead of starting from 0
+  for (var i = gifLimit - 10; i < GiphyData.data.length; i++) {
     // create div
     var gifDiv = $("<div>");
     var gifRating = $("<p>");
@@ -76,32 +85,50 @@ function updatePage(GiphyData) {
 
     var dataRating = GiphyData.data[i].rating;
     if (dataRating) {
-      gifRating.text("Rating: " + dataRating);
+      gifRating.text("Rating: " + dataRating.toUpperCase());
     }
 
     var dataTitle = GiphyData.data[i].title;
     if (dataTitle) {
       gifTitle.text("Title: " + dataTitle);
     }
-    gifRating.addClass("small");
+    gifRating.addClass("small ");
     gifTitle.addClass("small mb-0");
 
     // build image tag
     var gifImage = $("<img>");
     var gifStill = GiphyData.data[i].images.fixed_height_still.url;
     var gifAnimated = GiphyData.data[i].images.fixed_height.url;
+    var width = GiphyData.data[i].images.fixed_height.width;
+
+    var fav = $("<i>");
+    var dlIcon = $("<i>");
+    var dl = $("<a href='" + gifAnimated + "' download>");
+    dl.addClass("dl");
+
+    dl.append(dlIcon);
+    fav.addClass("fas fa-heart");
+    dlIcon.addClass("fas fa-download");
 
     if (gifStill) {
+      // make sure URL is returned in the data
       gifImage.addClass("gif");
       gifImage.attr("src", gifStill);
       gifImage.attr("data-still", gifStill);
       gifImage.attr("data-animate", gifAnimated);
       gifImage.attr("data-state", "still");
+      var table = $("<table>");
+      var row = $("<tr>");
+      var cell1 = $("<td>").addClass("cell1");
+      var cell2 = $("<td>").addClass("cell2");
+      table.width(width);
+      table.append(row).append(cell1, cell2);
+      cell1.append(gifTitle, gifRating);
+      cell2.append(fav, dl);
+
       gifDiv.addClass("float-left mr-3"); // bootstrap float
       gifDiv.append(gifImage);
-      gifDiv.append(gifTitle);
-      gifDiv.append(gifRating);
-
+      gifDiv.append(table);
       $(".gifContainer").append(gifDiv);
     }
   }
@@ -169,7 +196,7 @@ $(document).ready(function() {
       .val()
       .trim();
     if (newCategory) {
-    //   console.log(newCategory);
+      //   console.log(newCategory);
       $("#categoryInput").val("");
       topics.push(newCategory);
       generateButtons();

@@ -13,3 +13,35 @@ body, .jumbotron {
 div {
     /* border: 1px solid red; */
 }
+
+table {
+    /* border: 1px solid black; */
+    margin: 0;
+    padding: 0;
+}
+
+.cell1 {
+    /* text-align: left; */
+}
+
+.cell2 {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.fa-heart {
+    color: #dd3366
+}
+
+.fa-heart:hover {
+    cursor: cell;
+}
+
+.dl {
+    color:black;
+}
+
+i {
+    position: relative;
+    text-align: right;
+}
