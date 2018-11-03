@@ -24,6 +24,8 @@ var topics = [
 var gifLimit = 10;
 var searchTerm = "";
 
+var favorites=[];
+
 function buildQueryURL(gifCategory, limit) {
   //https://api.giphy.com/v1/gifs/search?api_key=5luyhCx489UHXt7GXRw4Z3kAw9RZbPTO&q=cats
   const API_KEY = "5luyhCx489UHXt7GXRw4Z3kAw9RZbPTO";
@@ -108,6 +110,7 @@ function updatePage(GiphyData) {
 
     dl.append(dlIcon);
     fav.addClass("far fa-heart");
+    fav.attr("data-state", "empty");
     dlIcon.addClass("fas fa-download");
 
     if (gifStill) {
@@ -176,6 +179,20 @@ $(document).ready(function() {
       $(this).attr("data-state", "still");
     }
   });
+
+  // function to handle clicking on Favorite icon
+  $(document).on("click", ".fa-heart", function() {
+    if ($(this).attr("data-state")==="empty"){
+      $(this).removeClass("far");
+      $(this).addClass("fas");
+      $(this).attr("data-state","full");
+    } else {
+      $(this).removeClass("fas");
+      $(this).addClass("far");
+      $(this).attr("data-state","empty");
+    }
+
+  })
 
   //When clicking the + button, it adds 10 to the limit and re-does the AJAX call, then re-populates everything.
   //TODO: Figure out a way to keep original content, and simply add more to the bottom

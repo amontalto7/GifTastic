@@ -37,6 +37,11 @@ table {
     cursor: cell;
 }
 
+.fas:hover {
+    cursor: unset;
+}
+
+
 .dl {
     color:black;
     margin-left: 5px;
