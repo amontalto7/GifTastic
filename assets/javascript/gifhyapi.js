@@ -1,9 +1,7 @@
-//TODO: Implement "favorites" by grabbing ID, then using "Get GIF by ID Endpoint"
-// console.log(GiphyData.data[i].id);
-//TODO: Figure out where TAGS are stores in the object
-// Direct Download:
-// https://www.w3schools.com/tags/att_a_download.asp
-// https://www.elegantthemes.com/blog/divi-resources/how-to-create-a-direct-single-click-download-button-in-divi-using-the-download-attribute
+//TODO:
+// 1) Change color on selected button - while resetting all other buttons
+// 2) Figure out where TAGS are stored in the object
+// 3) Layout issues
 
 const API_KEY = "5luyhCx489UHXt7GXRw4Z3kAw9RZbPTO";
 
@@ -19,17 +17,16 @@ var topics = [
   "oh snap",
   "agree",
   "excellent",
-  "reactions",
-  "derp"
+  "reactions"
 ];
 
 var gifLimit = 10;
 var searchTerm = "";
 
-var favorites = JSON.parse(localStorage.getItem("favorites"));
 // Checks to see if favorites exists in localStorage and is an array currently
 // If not, set a local favorites variable to an empty array
 // Otherwise favorites is our current list of IDs
+var favorites = JSON.parse(localStorage.getItem("favorites"));
 if (!Array.isArray(favorites)) {
   favorites = [];
 }
@@ -117,10 +114,11 @@ function updatePage(GiphyData) {
       var id = GiphyData.data[i].id;
 
       var dlIcon = $("<i>");
-      var dl = $("<a href='" + gifAnimated + "' download>");
-      dl.addClass("dl");
-      dl.append(dlIcon);
-      dlIcon.addClass("fas fa-download");
+      // var dl = $("<a href='" + gifAnimated + "' download>");  // not working as expected
+      // dl.addClass("dl");
+      // dl.append(dlIcon);
+      dlIcon.addClass("fas fa-download dl");
+      dlIcon.attr("data-url", gifAnimated);
 
       var fav = $("<i>");
       fav.attr("data-id", id);
@@ -149,7 +147,7 @@ function updatePage(GiphyData) {
       table.width(width);
       table.append(row).append(cell1, cell2);
       cell1.append(gifTitle, gifRating);
-      cell2.append(fav, dl);
+      cell2.append(fav, dlIcon);
 
       gifDiv.addClass("float-left mr-3"); // bootstrap float
       gifDiv.append(gifImage);
@@ -166,6 +164,37 @@ function updatePage(GiphyData) {
   addMore.attr("data-category", searchTerm);
   addDiv.append(addMore);
   $(".addmore").append(addMore);
+}
+
+//the following two functions are an attempt to get direct download to work.
+// code via https://stackoverflow.com/questions/49474775/chrome-65-blocks-cross-origin-a-download-client-side-workaround-to-force-down
+function forceDownload(blob, filename) {
+  var a = document.createElement("a");
+  a.download = filename;
+  a.href = blob;
+  a.click();
+}
+
+// Current blob size limit is around 500MB for browsers
+function downloadResource(url, filename) {
+  if (!filename)
+    filename = url
+      .split("\\")
+      .pop()
+      .split("/")
+      .pop();
+  fetch(url, {
+    headers: new Headers({
+      Origin: location.origin
+    }),
+    mode: "cors"
+  })
+    .then(response => response.blob())
+    .then(blob => {
+      let blobUrl = window.URL.createObjectURL(blob);
+      forceDownload(blobUrl, filename);
+    })
+    .catch(e => console.error(e));
 }
 
 $(document).ready(function() {
@@ -204,7 +233,7 @@ $(document).ready(function() {
 
   function addFavorite(gifId) {
     favorites.push(gifId);
-    console.log(favorites);
+    // console.log(favorites);
     localStorage.setItem("favorites", JSON.stringify(favorites));
   }
 
@@ -213,7 +242,7 @@ $(document).ready(function() {
     if (index > -1) {
       favorites.splice(index, 1);
     }
-    console.log(favorites);
+    // console.log(favorites);
     localStorage.setItem("favorites", JSON.stringify(favorites));
   }
 
@@ -230,6 +259,12 @@ $(document).ready(function() {
       $(this).attr("data-state", "empty");
       removeFavorite($(this).attr("data-id"));
     }
+  });
+
+  // function to handle clicking on download icon
+  $(document).on("click", ".fa-download", function() {
+    var dlURL = $(this).attr("data-url");
+    downloadResource(dlURL);
   });
 
   //When clicking the + button, it adds 10 to the limit and re-does the AJAX call, then re-populates everything.
@@ -263,15 +298,21 @@ $(document).ready(function() {
 
   $("#favorites").on("click", function() {
     clear();
-    favorites = favorites.filter(Boolean); // filter any null values out of array
-    var favParams = favorites.join();
-    var favURL = "https://api.giphy.com/v1/gifs?api_key="+API_KEY+"&ids=" + favParams;
-    console.log(favURL);
 
-    $.ajax({
-      url: favURL,
-      method: "GET"
-    }).then(updatePage);
+    if (favorites.length > 0) {   // only run the ajax call if there are items in favorites array
+      favorites = favorites.filter(Boolean); // filter any null values out of array
+      var favParams = favorites.join();
+      var favURL =
+        "https://api.giphy.com/v1/gifs?api_key=" +
+        API_KEY +
+        "&ids=" +
+        favParams;
+      console.log(favURL);
 
-  })
+      $.ajax({
+        url: favURL,
+        method: "GET"
+      }).then(updatePage);
+    }
+  });
 });
