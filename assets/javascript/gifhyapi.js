@@ -24,7 +24,13 @@ var topics = [
 var gifLimit = 10;
 var searchTerm = "";
 
-var favorites=[];
+var favorites = JSON.parse(localStorage.getItem("favorites"));
+// Checks to see if favorites exists in localStorage and is an array currently
+// If not, set a local favorites variable to an empty array
+// Otherwise favorites is our current list of IDs
+if (!Array.isArray(favorites)) {
+  favorites = [];
+}
 
 function buildQueryURL(gifCategory, limit) {
   //https://api.giphy.com/v1/gifs/search?api_key=5luyhCx489UHXt7GXRw4Z3kAw9RZbPTO&q=cats
@@ -80,40 +86,55 @@ function updatePage(GiphyData) {
 
   // if there is already content and you've clicked the + button, it will simply add more to the page instead of starting from 0
   for (var i = gifLimit - 10; i < GiphyData.data.length; i++) {
-    // create div
-    var gifDiv = $("<div>");
-    var gifRating = $("<p>");
-    var gifTitle = $("<p>");
-
-    var dataRating = GiphyData.data[i].rating;
-    if (dataRating) {
-      gifRating.text("Rating: " + dataRating.toUpperCase());
-    }
-
-    var dataTitle = GiphyData.data[i].title;
-    if (dataTitle) {
-      gifTitle.text("Title: " + dataTitle);
-    }
-    gifRating.addClass("small ");
-    gifTitle.addClass("small mb-0");
-
-    // build image tag
-    var gifImage = $("<img>");
     var gifStill = GiphyData.data[i].images.fixed_height_still.url;
-    var gifAnimated = GiphyData.data[i].images.fixed_height.url;
-    var width = GiphyData.data[i].images.fixed_height.width;
-
-    var fav = $("<i>");
-    var dlIcon = $("<i>");
-    var dl = $("<a href='" + gifAnimated + "' download>");
-    dl.addClass("dl");
-
-    dl.append(dlIcon);
-    fav.addClass("far fa-heart");
-    fav.attr("data-state", "empty");
-    dlIcon.addClass("fas fa-download");
-
     if (gifStill) {
+      // console.log(gifStill);
+
+      // create div
+      var gifDiv = $("<div>");
+      var gifRating = $("<p>");
+      var gifTitle = $("<p>");
+
+      var dataRating = GiphyData.data[i].rating;
+      if (dataRating) {
+        gifRating.text("Rating: " + dataRating.toUpperCase());
+      }
+
+      var dataTitle = GiphyData.data[i].title;
+      if (dataTitle) {
+        gifTitle.text("Title: " + dataTitle);
+      }
+      gifRating.addClass("small ");
+      gifTitle.addClass("small mb-0");
+
+      // build image tag
+
+      var gifImage = $("<img>");
+
+      var gifAnimated = GiphyData.data[i].images.fixed_height.url;
+      var width = GiphyData.data[i].images.fixed_height.width;
+      var id = GiphyData.data[i].id;
+
+      var dlIcon = $("<i>");
+      var dl = $("<a href='" + gifAnimated + "' download>");
+      dl.addClass("dl");
+      dl.append(dlIcon);
+      dlIcon.addClass("fas fa-download");
+
+      var fav = $("<i>");
+      fav.attr("data-id", id);
+      // check to see if gif is already in favorites
+      var index = favorites.indexOf(id);
+      if (index > -1) {
+        // if it is, display full heart
+        fav.addClass("fas fa-heart");
+        fav.attr("data-state", "full");
+      } else {
+        // otherwise, display empty heart
+        fav.addClass("far fa-heart");
+        fav.attr("data-state", "empty");
+      }
+
       // make sure URL is returned in the data
       gifImage.addClass("gif");
       gifImage.attr("src", gifStill);
@@ -162,7 +183,7 @@ $(document).ready(function() {
     $.ajax({
       url: queryURL,
       headers: {
-        'Accept' : 'image/*'
+        Accept: "image/*"
       },
       method: "GET"
     }).then(updatePage);
@@ -180,19 +201,35 @@ $(document).ready(function() {
     }
   });
 
+  function addFavorite(gifId) {
+    favorites.push(gifId);
+    console.log(favorites);
+    localStorage.setItem("favorites", JSON.stringify(favorites));
+  }
+
+  function removeFavorite(gifId) {
+    var index = favorites.indexOf(gifId);
+    if (index > -1) {
+      favorites.splice(index, 1);
+    }
+    console.log(favorites);
+    localStorage.setItem("favorites", JSON.stringify(favorites));
+  }
+
   // function to handle clicking on Favorite icon
   $(document).on("click", ".fa-heart", function() {
-    if ($(this).attr("data-state")==="empty"){
+    if ($(this).attr("data-state") === "empty") {
       $(this).removeClass("far");
       $(this).addClass("fas");
-      $(this).attr("data-state","full");
+      $(this).attr("data-state", "full");
+      addFavorite($(this).attr("data-id"));
     } else {
       $(this).removeClass("fas");
       $(this).addClass("far");
-      $(this).attr("data-state","empty");
+      $(this).attr("data-state", "empty");
+      removeFavorite($(this).attr("data-id"));
     }
-
-  })
+  });
 
   //When clicking the + button, it adds 10 to the limit and re-does the AJAX call, then re-populates everything.
   //TODO: Figure out a way to keep original content, and simply add more to the bottom
