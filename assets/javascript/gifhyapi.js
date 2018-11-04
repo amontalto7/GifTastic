@@ -5,6 +5,8 @@
 // https://www.w3schools.com/tags/att_a_download.asp
 // https://www.elegantthemes.com/blog/divi-resources/how-to-create-a-direct-single-click-download-button-in-divi-using-the-download-attribute
 
+const API_KEY = "5luyhCx489UHXt7GXRw4Z3kAw9RZbPTO";
+
 var topics = [
   "fail",
   "deal with it",
@@ -34,14 +36,13 @@ if (!Array.isArray(favorites)) {
 
 function buildQueryURL(gifCategory, limit) {
   //https://api.giphy.com/v1/gifs/search?api_key=5luyhCx489UHXt7GXRw4Z3kAw9RZbPTO&q=cats
-  const API_KEY = "5luyhCx489UHXt7GXRw4Z3kAw9RZbPTO";
 
   // base queryURL
   var queryURL = "https://api.giphy.com/v1/gifs/search?";
 
   // Begin building an object to contain our API call's query parameters
   // Set the API key
-  var queryParams = { api_key: "5luyhCx489UHXt7GXRw4Z3kAw9RZbPTO" };
+  var queryParams = { api_key: API_KEY };
 
   // Grab the datavalue from the button clicked
   queryParams.q = gifCategory;
@@ -259,4 +260,18 @@ $(document).ready(function() {
       generateButtons();
     }
   });
+
+  $("#favorites").on("click", function() {
+    clear();
+    favorites = favorites.filter(Boolean); // filter any null values out of array
+    var favParams = favorites.join();
+    var favURL = "https://api.giphy.com/v1/gifs?api_key="+API_KEY+"&ids=" + favParams;
+    console.log(favURL);
+
+    $.ajax({
+      url: favURL,
+      method: "GET"
+    }).then(updatePage);
+
+  })
 });
